@@ -1,0 +1,73 @@
+#Download Protien data, got filtered CNV data from group member
+#delete second line in files with a double header using:
+sed -i '1d' filename
+
+#check if the number of column names matches with the next couple rows with:
+for i in *; do echo $i; sed -n 1p $i | wc -w; sed -n 2p $i | wc -w; sed -n 3p $i | wc -w; done
+#the numbers for each file should be the same
+
+#run "runLinScript.sh" to perform linear regressions (uses as many cores as are availible)
+
+#Perform bonferroni correction:
+-------------------------------------------------------------
+#in file with CNVs (get number of CNVs in each file)
+for i in *.txt; do echo $i; sed -n 1p $i | wc -w; done
+
+#results:
+brca_CNV_down.txt
+3
+brca_CNV_up.txt
+340
+ccrcc_CNV_down.txt
+48
+ccrcc_CNV_up.txt
+350
+en_CNV_down.txt
+48
+en_CNV_up.txt
+350
+gbm_CNV_down.txt
+48
+gbm_CNV_up.txt
+350
+hnscc_CNV_down.txt
+48
+hnscc_CNV_up.txt
+347
+luad_CNV_down.txt
+48
+luad_CNV_up.txt
+350
+ovarian_CNV_down.txt
+3
+ovarian_CNV_up.txt
+335
+--------------------------------------------------------------
+#in protien files (get number of protiens in each file) 
+for i in *.tsv; do echo $i; sed -n 1p $i | wc -w; done
+
+brcaProDataMod.tsv
+7768
+ccrccProDataMod.tsv
+6666
+enProData.tsv
+7913
+gbmProData.tsv
+8829
+hnsccProData.tsv
+7473
+luadProDataMod.tsv
+7273
+ovarianProDataMod.tsv
+8169
+
+------------------------------------------------------
+# calc bon value (new p value = .05/(numberOfCNVs * numberOfProtiens))
+-----------------
+#run doBonCorrect.sh which is just this line in a file:
+
+awk -v bonVal=$2 '{ if ($7 < bonVal) {print}}' $1 > bonCorrect/$1.bonCor
+-------------------------------------------------------
+#added headers to the new files becasue they got left out
+
+for i in *; do sed '1i\\tCNV\tProtien\tslope\tintercept\trValue\tpValue\tstdErr' $i > $i.withHeader; done  
