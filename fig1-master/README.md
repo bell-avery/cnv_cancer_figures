@@ -1,0 +1,1 @@
+To Generate the Figure, simply run each file starting with Step 1. These files will generate the tables necessary, though the tables are included in the repository as well for convenience. The resulting figure is also included as 'Fig1_final.png'.
