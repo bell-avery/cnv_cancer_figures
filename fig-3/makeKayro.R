@@ -8,6 +8,7 @@ BiocManager::install("ggbio")
 BiocManager::install("Homo.sapiens")
 BiocManager::install("karyoploteR")
 
+
 library(karyoploteR)
 library(ggbio)
 library(Homo.sapiens)
@@ -36,7 +37,7 @@ hnscc2 = mutate(hnscc, name = paste(CNV, Protien, sep = '/'))
 luad2 = mutate(luad, name = paste(CNV, Protien, sep = '/'))
 ovarian2 = mutate(ovarian, name = paste(CNV, Protien, sep = '/'))
 
-#list of CNV/Protien pairs that are common between the cancers
+#list of CNV/Protien pairs that are common between the cancers (excluding gbm)
 common = Reduce(intersect, list(brca2$name,ccrcc2$name, endo2$name, hnscc2$name, luad2$name, ovarian2$name))
 
 nCommon = Reduce(intersect,list(luad$CNV, ovarian$CNV))
@@ -47,7 +48,7 @@ myList = unlist(com)
 myList = myList[c(TRUE,FALSE)]
 
 
-#takes in list of CNVs, return ones that work:
+#takes in list of CNVs, return ones that work with "genesymbol":
 getList = function(inList){
   returnable = c()
   numFilteredOut = 0
@@ -55,6 +56,7 @@ getList = function(inList){
     worked = try(genesymbol[inList[i]])
     if(isTRUE(class(worked)=="try-error")) {
       print(i)
+      #print(inList[i])
       numFilteredOut = numFilteredOut+1
       next } 
     else {
@@ -73,24 +75,13 @@ plotList = function(inList){
   tryList = getList(inList)
   wh <- genesymbol[tryList] 
   wh <- range(wh, ignore.strand = TRUE)
-  kp <- plotKaryotype(genome="hg19")
-  kpPlotRegions(kp, wh, col="#FFAACC")
+  kp <- plotKaryotype(genome="hg19",plot.type=2, 
+                      chromosomes=c("chr1", "chr3", "chr7", "chr8", "chr20"))
+  kpPlotRegions(kp, wh, col="green")
 }
 
 
 
-
-#some other graphing stuff
-tryList = getList(nCommon)
-wh <- genesymbol[tryList]
-wh <- genesymbol[c("BRCA1", "NBR1")]
-
-p.txdb <- autoplot(Homo.sapiens, which = wh)
-p.txdb
-
-
-data(ideoCyto, package = "biovizBase")
-autoplot(ideoCyto$hg19, layout = "karyogram", cytobands = TRUE)
 
 
 
