@@ -19,6 +19,8 @@ library(readxl)
 #these are all the significant genes
 sigGenes = read_excel("sig_genes.xlsx")
 
+genes400 = read_csv('400genes.csv')
+
 #the bonforoni corrected data
 brca = read_tsv('brca_CNV_up.tsv')
 ccrcc = read_tsv('ccrcc_CNV_up.tsv')
@@ -41,6 +43,7 @@ ovarian2 = mutate(ovarian, name = paste(CNV, Protien, sep = '/'))
 common = Reduce(intersect, list(brca2$name,ccrcc2$name, endo2$name, hnscc2$name, luad2$name, ovarian2$name))
 
 nCommon = Reduce(intersect,list(luad$CNV, ovarian$CNV))
+sigCommon = Reduce(intersect, list(sigGenes$ENDO, sigGenes$LUAD, sigGenes$BRCA))
 
 #myList is a list of CNV from common
 com = str_split(common, '/')
@@ -53,10 +56,13 @@ getList = function(inList){
   returnable = c()
   numFilteredOut = 0
   for(i in c(1:length(inList))){
+    if(is.na(inList[i])){
+      next
+    }
     worked = try(genesymbol[inList[i]])
     if(isTRUE(class(worked)=="try-error")) {
       print(i)
-      #print(inList[i])
+      print(inList[i])
       numFilteredOut = numFilteredOut+1
       next } 
     else {
@@ -74,16 +80,21 @@ plotList = function(inList){
   data(genesymbol, package = "biovizBase")
   tryList = getList(inList)
   wh <- genesymbol[tryList] 
-  wh <- range(wh, ignore.strand = TRUE)
-  kp <- plotKaryotype(genome="hg19",plot.type=2, 
-                      chromosomes=c("chr1", "chr3", "chr7", "chr8", "chr20"))
-  kpPlotRegions(kp, wh, col="green")
+  #wh <- range(wh)
+  kp <- plotKaryotype(genome="hg19",plot.type=1)
+                      #chromosomes=c("chr8"))
+                      #chromosomes=c("chr1", "chr3", "chr7", "chr8", "chr20"))
+  kpPlotRegions(kp, wh, col="orange")
 }
 
-
-
-
-
+#Isolate GBM Y chrom gene list
+#can change list in getList() to isolate genes in a different list
+data(genesymbol, package = "biovizBase")
+tryList = getList(sigGenes$GBM)
+wh <- genesymbol[tryList]
+filteredY = wh[wh@seqnames == "chrY"]
+gbmYgenes = filteredY@ranges@NAMES
+write(gbmYgenes, 'gbmYgenes.txt')
 
 
 
